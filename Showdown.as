@@ -720,7 +720,8 @@ package {
 			
 			// attacklab: add sentinel to hack around khtml/safari bug:
 			// http://bugs.webkit.org/show_bug.cgi?id=11231
-
+			text += "~0";
+			
 			// Re-usable pattern to match any entirel ul or ol list:
 			
 			/*
