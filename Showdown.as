@@ -69,9 +69,6 @@ package {
 		// Used to track when we're inside an ordered or unordered list
 		// (see _ProcessListItems() for details):
 		private static var g_list_level:Number = 0;
-
-		// Template engine 
-		private static var m:Mustache = new Mustache();
 		
 		public static function makeHtml(text:String):String
 		{
@@ -82,9 +79,6 @@ package {
 			g_urls = new Array();
 			g_titles = new Array();
 			g_html_blocks = new Array();
-			
-			// Handle table markdown before string preprocessing
-			text = _DoTables(text);
 			
 			// attacklab: Replace ~ with ~T
 			// This lets us use tilde as an escape char to avoid md5 hashes
@@ -308,42 +302,6 @@ package {
 			return text;
 		}
 		
-		/*
-		*	Parsing table markup to object
-		*	
-		*	In: 
-		*		"cell 11|cell 12|cell 13\ncell 21|cell 22|cell 23"
-		*		\n is a row separator, | is a cell separator
-		*	
-		*	Out:	
-		*		{ "table": [ 
-		*			{"row":[{"cell":1}, {"cell":2}, {"cell":3} ]}, 
-		*			{"row":[{"cell":1}, {"cell":2}, {"cell":3} ]}, 
-		*			{"row":[{"cell":1}, {"cell":2}, {"cell":3} ]}
-		*		]};
-		*
-		*/				
-		public static function parseTableString(tableString:String, rowSeparator:String="\n", cellSeparator:String="|"):Object
-		{			
-			var rows:Array = tableString.split(rowSeparator);
-			var table:Array = [], cells:Array;
-			var i:int, j:int, len:int=rows.length, len2:int, tmp:Array;
-			for (i=0; i<len; i++) 
-			{
-				if (rows[i] == "") 
-					continue;
-				cells = rows[i].split(cellSeparator);
-				tmp = [];
-				len2 = cells.length;
-				for (j=0; j<len2; j++) 
-				{
-					if (cells[j]) tmp.push({"cell":cells[j]});
-				}
-				table.push({"row": tmp});
-			}
-			return {"table": table};
-		}
-		
 		private static function hashElement(wholeMatch,m1,m2,m3,m4) {
 			var blockText = m1;
 			
@@ -373,6 +331,7 @@ package {
 			text = text.replace(/^[ ]{0,2}([ ]?\-[ ]?){3,}[ \t]*$/gm,key);
 			text = text.replace(/^[ ]{0,2}([ ]?\_[ ]?){3,}[ \t]*$/gm,key);
 			
+			text = _DoTables(text);
 			text = _DoLists(text);
 			text = _DoCodeBlocks(text);
 			text = _DoBlockQuotes(text);
@@ -787,27 +746,28 @@ package {
 			return text;
 		}
 		
-		private static function _DoTables(tables_str:String):String {
-			/*
-			(\|						// begining of the table
-			(?:[^\|\r\n]+\|)+		// whole row with | at the end
-			\r|\n|\r\n				// new line character alternation 
-			)+
-			*/
-			var re:RegExp = /(\|(?:[^\|\r\n]+\|)+\r|\n|\r\n)+/gm;
-			var createTableMarkup:Function = function (match:String) {
-				var a:Array = arguments;
-				match = match.substring(1, match.length-2);
-							
-				var tpl_table:String = "<table>{{#table}}<tr>{{>row}}</tr>{{/table}}</table>";
-				var tpl_row_partial:Object = {"row": "{{#row}}<td>{{cell}}</td>{{/row}}"};
-				var tableOb:Object = parseTableString(match, '\r');
-				var tableHTML:String = m.to_html(tpl_table, tableOb, tpl_row_partial);
-				
-				return '\n' + tableHTML + '\n';
-			};
-			tables_str = tables_str.replace(re, createTableMarkup);
-			return tables_str;
+		private static function _DoTables(text) {
+			text = text.replace(/(?:\|(?:[^\|\r\n]+\|)+\n)+/gm,
+				function(wholeMatch) {
+					return "<table>" + _DoTableRows(wholeMatch) + "</table>";
+				});
+			return text
+		}
+		
+		private static function _DoTableRows(text) {
+			text = text.replace(/\|((?:[^\|\r\n]+\|)+)\n/gm,
+				function(wholeMatch, g1) {
+					return "<tr>" + _DoTableCells(g1) + "</tr>";
+				});
+			return text;
+		}
+		
+		private static function _DoTableCells(text) {
+			text = text.replace(/([^\|\r\n]+)\|/gm,
+				function(wholeMatch, g1) {
+					return "<td>" + _RunSpanGamut(g1) + "</td>";
+				});
+			return text;
 		}
 		
 		private static function _ProcessListItems(list_str) {
