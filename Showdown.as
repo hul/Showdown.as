@@ -1,4 +1,4 @@
-//Copyright (c) 2010, Charles Strahan
+﻿//Copyright (c) 2010, Charles Strahan
 //<http://www.charlesstrahan.com/>  
 //All rights reserved.
 //	
@@ -57,7 +57,7 @@
 //   var html = Showdown.makeHtml(text);
 //
 
-package {
+package showdown {
 
 	public class Showdown
 	{
@@ -733,7 +733,7 @@ package {
 					var list_type = (m3.search(/[*+-]/g)>-1) ? "ul" : "ol";
 					// Turn double returns into triple returns, so that we can make a
 					// paragraph for the last item in a list, if necessary:
-					var list = list.replace(/\n{2,}/g,"\n\n\n");;
+					list = list.replace(/\n{2,}/g,"\n\n\n");;
 					var result = _ProcessListItems(list);
 					result = runup + "<"+list_type+">\n" + result + "</"+list_type+">\n";	
 					return result;
@@ -873,7 +873,9 @@ package {
 					codeblock = codeblock.replace(/^\n+/g,""); // trim leading newlines
 					codeblock = codeblock.replace(/\n+$/g,""); // trim trailing whitespace
 					
-					codeblock = "<pre><code>" + codeblock + "\n</code></pre>";
+					// disabling codeblocks, because they're not needed in CoC.
+					codeblock = "<p>" + codeblock + "\n</p>";
+					// codeblock = "<pre><code>" + codeblock + "\n</code></pre>";
 					
 					return hashBlock(codeblock) + nextChar;
 				}
@@ -1051,8 +1053,9 @@ package {
 			//
 			// Wrap <p> tags.
 			//
+			var i:Number;
 			var end = grafs.length;
-			for (var i=0; i<end; i++) {
+			for (i=0; i<end; i++) {
 				var str:String = grafs[i];
 				
 				// if this is an HTML marker, copy it
@@ -1072,7 +1075,7 @@ package {
 			// Unhashify HTML blocks
 			//
 			end = grafsOut.length;
-			for (var i=0; i<end; i++) {
+			for (i=0; i<end; i++) {
 				// if this is a marker for an html block...
 				while (grafsOut[i].search(/~K(\d+)K/) >= 0) {
 					var firstGroup:String = (/~K(\d+)K/).exec(grafsOut[i])[1];
