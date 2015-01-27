@@ -65,11 +65,18 @@ package {
 		private static var g_urls:Array;
 		private static var g_titles:Array;
 		private static var g_html_blocks:Array;
-		
+		private static var g_extensions:Array = new Array();
+            ;
 		// Used to track when we're inside an ordered or unordered list
 		// (see _ProcessListItems() for details):
 		private static var g_list_level:Number = 0;
 		
+        public static function addExtension(extension):void 
+        {
+            if (g_extensions.indexOf(extension) == -1)
+                g_extensions.push(extension);
+        }
+        
 		public static function makeHtml(text:String):String
 		{
 			// Clear the global hashes. If we don't clear these, you get conflicts
@@ -79,7 +86,7 @@ package {
 			g_urls = new Array();
 			g_titles = new Array();
 			g_html_blocks = new Array();
-			
+            
 			// attacklab: Replace ~ with ~T
 			// This lets us use tilde as an escape char to avoid md5 hashes
 			// The choice of character is arbitray; anything that isn't
@@ -107,6 +114,12 @@ package {
 			// contorted like /[ \t]*\n+/ .
 			text = text.replace(/^[ \t]+$/mg,"");
 			
+            // Execute all extensions on processed text.
+            for (var i=0; i<g_extensions.length; i++)
+            {
+                text = _ExecuteExtension(g_extensions[i], text);
+            }
+            
 			// Turn block-level HTML blocks into hash entries
 			text = _HashHTMLBlocks(text);
 			
@@ -126,7 +139,15 @@ package {
 			return text;
 		}
 		
-		
+        private static function _ExecuteExtension(extensionClass, text)
+        {
+            var extension = new extensionClass();
+            if (extension.hasOwnProperty("filter"))
+                return extension.filter(text);
+            else
+                throw new Error("filter method not found");
+        }
+        
 		private static function _StripLinkDefinitions(text) {
 			//
 			// Strips link definitions from text, stores the URLs and titles in

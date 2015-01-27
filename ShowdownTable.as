@@ -1,5 +1,7 @@
 package
 {
+    import mx.utils.StringUtil;
+
     public class ShowdownTable
     {
         public function ShowdownTable()
@@ -7,42 +9,40 @@ package
             
         }
         
-        private static var converter = Showdown;
-        private static var style = 'text-align:left;'
+        private var converter = Showdown;
+        private var style = 'text-align:left;'
         
-        private static function th(header)
+        private function th(header)
         {
             if (header.trim() === "") { return "";}
             var id = header.trim().replace(/ /g, '_').toLowerCase();
             return '<th id="' + id + '" style="'+style+'">' + header + '</th>';
         }
         
-        private static function td(cell) 
+        private function td(cell) 
         {
             return '<td style="'+style+'">' + converter.makeHtml(cell) + '</td>';
         };
         
-        private static function ths 
+        private function ths() 
         {
             var out = "", i = 0, hs = [].slice.apply(arguments);
-            for (i;i<hs.length;i+=1) 
-            {
+            for (i;i<hs.length;i+=1) {
                 out += th(hs[i]) + '\n';
             }
             return out;
         }
         
-        private static function tds 
+        private function tds()
         {
             var out = "", i = 0, ds = [].slice.apply(arguments);
-            for (i;i<ds.length;i+=1) 
-            {
+            for (i;i<ds.length;i+=1) {
                 out += td(ds[i]) + '\n';
             }
             return out;
         }
         
-        private static function thead 
+        private function thead()
         {
             var out, i = 0, hs = [].slice.apply(arguments);
             out = "<thead>\n";
@@ -53,7 +53,7 @@ package
             return out;
         }
         
-        private static function tr() 
+        private function tr() 
         {
             var out, i = 0, cs = [].slice.apply(arguments);
             out = "<tr>\n";
@@ -62,28 +62,30 @@ package
             return out;
         }
         
-        public static function filter(text) 
+        public function filter(text) 
         {
-            var i=0, lines = text.split('\n'), line, hs, rows, out = [];
+            var i=0;
+            var lines = text.split('\n');
+            var line, hs, rows, out = [];
             for (i; i<lines.length;i+=1) {
                 line = lines[i];
                 // looks like a table heading
-                if (line.trim().match(/^[|]{1}.*[|]{1}$/)) {
-                    line = line.trim();
+                if (StringUtil.trim(line).match(/^[|]{1}.*[|]{1}$/)) {
+                    line = StringUtil.trim(line);
                     var tbl = [];
                     tbl.push('<table>');
                     hs = line.substring(1, line.length -1).split('|');
                     tbl.push(thead.apply(this, hs));
                     line = lines[++i];
-                    if (!line.trim().match(/^[|]{1}[-=|: ]+[|]{1}$/)) {
+                    if (!StringUtil.trim(line).match(/^[|]{1}[-=|: ]+[|]{1}$/)) {
                         // not a table rolling back
                         line = lines[--i];
                     }
                     else {
                         line = lines[++i];
                         tbl.push('<tbody>');
-                        while (line.trim().match(/^[|]{1}.*[|]{1}$/)) {
-                            line = line.trim();
+                        while (StringUtil.trim(line).match(/^[|]{1}.*[|]{1}$/)) {
+                            line = StringUtil.trim(line);
                             tbl.push(tr.apply(this, line.substring(1, line.length -1).split('|')));
                             line = lines[++i];
                         }
@@ -97,7 +99,7 @@ package
                 out.push(line);
             }
             return out.join('\n');
-        };
+        }
         
     }
 }
