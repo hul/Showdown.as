@@ -352,7 +352,6 @@ package {
 			text = text.replace(/^[ ]{0,2}([ ]?\-[ ]?){3,}[ \t]*$/gm,key);
 			text = text.replace(/^[ ]{0,2}([ ]?\_[ ]?){3,}[ \t]*$/gm,key);
 			
-			text = _DoTables(text);
 			text = _DoLists(text);
 			text = _DoCodeBlocks(text);
 			text = _DoBlockQuotes(text);
@@ -764,30 +763,6 @@ package {
 			// attacklab: strip sentinel
 			text = text.replace(/~0/,"");
 			
-			return text;
-		}
-		
-		private static function _DoTables(text) {
-			text = text.replace(/(?:\|(?:[^\|\r\n]+\|)+\n)+/gm,
-				function(wholeMatch) {
-					return "<table>" + _DoTableRows(wholeMatch) + "</table>";
-				});
-			return text
-		}
-		
-		private static function _DoTableRows(text) {
-			text = text.replace(/\|((?:[^\|\r\n]+\|)+)\n/gm,
-				function(wholeMatch, g1) {
-					return "<tr>" + _DoTableCells(g1) + "</tr>";
-				});
-			return text;
-		}
-		
-		private static function _DoTableCells(text) {
-			text = text.replace(/([^\|\r\n]+)\|/gm,
-				function(wholeMatch, g1) {
-					return "<td>" + _RunSpanGamut(g1) + "</td>";
-				});
 			return text;
 		}
 		
