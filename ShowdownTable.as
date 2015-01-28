@@ -10,18 +10,18 @@ package
         }
         
         private var converter = Showdown;
-        private var style = 'text-align:left;'
+        private var style = ''
         
         private function th(header)
         {
             if (StringUtil.trim(header) === "") { return "";}
             var id = StringUtil.trim(header).replace(/ /g, '_').toLowerCase();
-            return '<th id="' + id + '" style="'+style+'">' + header + '</th>';
+            return '<th>' + header + '</th>';
         }
         
         private function td(cell) 
         {
-            return '<td style="'+style+'">' + converter.makeHtml(cell) + '</td>';
+            return '<td>' + converter.makeHtml(cell) + '</td>';
         };
         
         private function ths(hs) 
@@ -75,7 +75,6 @@ package
                     var tbl = [];
                     tbl.push('<table>');
                     hs = line.substring(1, line.length -1).split('|');
-                    trace (hs, typeof(hs));
                     tbl.push(thead(hs));
                     line = lines[++i];
                     if (!StringUtil.trim(line).match(/^[|]{1}[-=|: ]+[|]{1}$/)) {
@@ -97,7 +96,6 @@ package
                         continue;
                     }
                 }
-                trace ('out.push(', line, ')');
                 out.push(line);
             }
             return out.join('\n');
