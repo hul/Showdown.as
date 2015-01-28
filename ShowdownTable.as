@@ -14,8 +14,8 @@ package
         
         private function th(header)
         {
-            if (header.trim() === "") { return "";}
-            var id = header.trim().replace(/ /g, '_').toLowerCase();
+            if (StringUtil.trim(header) === "") { return "";}
+            var id = StringUtil.trim(header).replace(/ /g, '_').toLowerCase();
             return '<th id="' + id + '" style="'+style+'">' + header + '</th>';
         }
         
@@ -24,40 +24,40 @@ package
             return '<td style="'+style+'">' + converter.makeHtml(cell) + '</td>';
         };
         
-        private function ths() 
+        private function ths(hs) 
         {
-            var out = "", i = 0, hs = [].slice.apply(arguments);
+            var out = "", i = 0;
             for (i;i<hs.length;i+=1) {
                 out += th(hs[i]) + '\n';
             }
             return out;
         }
         
-        private function tds()
+        private function tds(ds)
         {
-            var out = "", i = 0, ds = [].slice.apply(arguments);
+            var out = "", i = 0;
             for (i;i<ds.length;i+=1) {
                 out += td(ds[i]) + '\n';
             }
             return out;
         }
         
-        private function thead()
+        private function thead(hs)
         {
-            var out, i = 0, hs = [].slice.apply(arguments);
+            var out, i = 0;
             out = "<thead>\n";
             out += "<tr>\n";
-            out += ths.apply(this, hs);
+            out += ths(hs);
             out += "</tr>\n";
             out += "</thead>\n";
             return out;
         }
         
-        private function tr() 
+        private function tr(cs) 
         {
-            var out, i = 0, cs = [].slice.apply(arguments);
+            var out, i = 0;
             out = "<tr>\n";
-            out += tds.apply(this, cs);
+            out += tds(cs);
             out += "</tr>\n";
             return out;
         }
@@ -75,7 +75,8 @@ package
                     var tbl = [];
                     tbl.push('<table>');
                     hs = line.substring(1, line.length -1).split('|');
-                    tbl.push(thead.apply(this, hs));
+                    trace (hs, typeof(hs));
+                    tbl.push(thead(hs));
                     line = lines[++i];
                     if (!StringUtil.trim(line).match(/^[|]{1}[-=|: ]+[|]{1}$/)) {
                         // not a table rolling back
@@ -86,7 +87,7 @@ package
                         tbl.push('<tbody>');
                         while (StringUtil.trim(line).match(/^[|]{1}.*[|]{1}$/)) {
                             line = StringUtil.trim(line);
-                            tbl.push(tr.apply(this, line.substring(1, line.length -1).split('|')));
+                            tbl.push(tr(line.substring(1, line.length -1).split('|')));
                             line = lines[++i];
                         }
                         tbl.push('</tbody>');
@@ -96,6 +97,7 @@ package
                         continue;
                     }
                 }
+                trace ('out.push(', line, ')');
                 out.push(line);
             }
             return out.join('\n');
